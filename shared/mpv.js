@@ -1,7 +1,12 @@
+const debug = require('debug')('wind-ctrl:mpv');
 const mpv = require('node-mpv');
 const config = require('../config');
 
 var _player = new mpv(config.mpv.options, config.mpv.commands);
+
+_player.mpvPlayer.stdout.on("data", (data) => {
+    debug(data.toString('utf-8'));
+});
 
 function ext(method, obj = _player) {
   return obj[method].bind(obj);
@@ -18,5 +23,9 @@ module.exports = {
   "jump": ext("goToPosition"),
   "on": ext("on"),
   "once": ext("once"),
-  "removeListener": ext("removeListener")
+  "removeListener": ext("removeListener"),
+  "mpv": {
+    "stdout": _player.mpvPlayer.stdout,
+    "stderr": _player.mpvPlayer.stderr
+  }
 };

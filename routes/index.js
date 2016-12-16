@@ -6,6 +6,8 @@ const resources = config.resources;
 
 const mpv = require('../shared/mpv');
 const mpm = require('../shared/mpm');
+const mpd = require('../shared/mpd')(mpv);
+
 var mpv_mpm = null;
 
 router.get('/', function(req, res, next) {
