@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const debug = require('debug')('wind-ctrl:main');
+const process = require('process');
+
 const config = require('../config');
 const resources = config.resources;
 
@@ -46,6 +48,13 @@ router.post('/player/volume/:volume', function(req, res, next) {
 
 router.post('/player/jump/:seconds', function(req, res, next) {
   mpv.jump(req.params.seconds);
+  res.json({ "success": true });
+});
+
+router.post('/app/exit', function(req, res, next) {
+  setInterval(() => {
+    mpv.mpv._mpv.kill('SIGKILL');
+  }, 3000);
   res.json({ "success": true });
 });
 

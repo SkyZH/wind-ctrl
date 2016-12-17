@@ -24,8 +24,7 @@ module.exports = {
   "on": ext("on"),
   "once": ext("once"),
   "removeListener": ext("removeListener"),
-  "mpv": {
-    "stdout": _player.mpvPlayer.stdout,
-    "stderr": _player.mpvPlayer.stderr
+  "mpv": () => {
+    return _player.mpvPlayer;
   }
 };
