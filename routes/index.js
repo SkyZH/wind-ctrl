@@ -2,15 +2,12 @@ const express = require('express');
 const router = express.Router();
 const debug = require('debug')('wind-ctrl:main');
 const process = require('process');
+const _ = require('lodash');
 
 const config = require('../config');
 const resources = config.resources;
 
 const mpv = require('../shared/mpv');
-const mpm = require('../shared/mpm');
-const mpd = require('../shared/mpd')(mpv);
-
-var mpv_mpm = null;
 
 router.get('/', function(req, res, next) {
   res.json({"success": true});
@@ -19,15 +16,13 @@ router.get('/', function(req, res, next) {
 router.get('/resources', function(req, res, next) {
   res.json({
     "success": true,
-    "resources": resources
+    "resources": _.map(resources, (resource, index) => _.merge(resource, { 'id': index }))
   });
 });
 
 router.post('/player/load/:id', function(req, res, next) {
-  if (mpv_mpm) mpv_mpm.release();
   const resource = resources[req.params.id];
-  mpv.loadFile(resource.path);
-  mpv_mpm = mpm(mpv, { repeat: resource.repeat });
+  mpv.loadFile(resource.path, resource.repeat);
   res.json({ "success": true });
 });
 
