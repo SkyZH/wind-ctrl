@@ -22,7 +22,7 @@ router.get('/resources', function(req, res, next) {
 
 router.post('/player/load/:id', function(req, res, next) {
   const resource = resources[req.params.id];
-  mpv.loadFile(resource.path, resource.repeat);
+  mpv.loadFile(resource);
   res.json({ "success": true });
 });
 

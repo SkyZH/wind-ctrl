@@ -27,11 +27,14 @@ const make_log = (name, message) => {
   };
 };
 
+var __status = null;
+
 io.on('connection', (client) => {
   clients.push(client);
   _(logs).forEach((log) => {
     client.emit('log', log);
   });
+  update_status();
   io_debug('new connection from client ' + client.id);
   client.on('disconnect', () => {
     io_debug('disconnected from client ' + client.id);
@@ -40,4 +43,9 @@ io.on('connection', (client) => {
 
 module.exports.init = (server) => {
   io.attach(server);
+};
+
+module.exports.update_status = update_status = (status = null) => {
+  __status = status || __status;
+  io.emit('status', __status);
 };

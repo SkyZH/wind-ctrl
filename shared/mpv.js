@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const io = require('./io');
+
 const debug = require('debug')('wind-ctrl:mpv');
 const debug_stdout = require('./io').debug('wind-ctrl:mpv:stdout');
 const debug_stderr = require('./io').debug('wind-ctrl:mpv:stderr');
@@ -21,10 +24,13 @@ module.exports = {
   "jump": ext("goToPosition")
 };
 
-module.exports.loadFile = (path, range = null) => {
-  _player.loadFile(path);
+module.exports.loadFile = (resource) => {
+  __data.resource = resource;
+  update_status();
 
-  __repeat = range;
+  _player.loadFile(resource.path);
+
+  __repeat = resource.repeat;
   _player.once("started", () => {
     if (__repeat) {
       _player.goToPosition(__repeat[0]);
@@ -44,12 +50,29 @@ const update_std = () => {
   __mpv.on('close', update_std);
 };
 
+var __status = {
+  duration: 1,
+  pause: true
+};
+var __data = {
+  position: 0,
+  resource: {},
+  start_time: Date.now(),
+  device: config.device
+};
+
+const update_status = () => {
+  io.update_status(_.merge(__status, __data));
+};
+
 _player.on('statuschange', (status) => {
-  debug(status);
+  __status = status;
+  update_status();
 });
 
 _player.on("timeposition", (seconds) => {
-  debug(seconds);
+  __data.position = seconds;
+  update_status();
   if (__repeat) {
     if (seconds < __repeat[0] || seconds > __repeat[1]) {
       _player.goToPosition(__repeat[0]);
@@ -58,3 +81,4 @@ _player.on("timeposition", (seconds) => {
 });
 
 update_std();
+update_status();
