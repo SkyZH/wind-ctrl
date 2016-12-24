@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const io = require('./io');
+const os = require('os');
 
 const debug = require('debug')('wind-ctrl:mpv');
 const debug_stdout = require('./io').debug('wind-ctrl:mpv:stdout');
@@ -7,8 +8,8 @@ const debug_stderr = require('./io').debug('wind-ctrl:mpv:stderr');
 const mpv = require('node-mpv');
 const config = require('../config');
 
-var _player = new mpv(config.mpv.options, config.mpv.commands);
-var __repeat = null;
+let _player = new mpv(config.mpv.options, config.mpv.commands);
+let __repeat = null;
 
 function ext(method, obj = _player) {
   return obj[method].bind(obj);
@@ -50,15 +51,19 @@ const update_std = () => {
   __mpv.on('close', update_std);
 };
 
-var __status = {
+let __status = {
   duration: 1,
   pause: true
 };
-var __data = {
+let __data = {
   position: 0,
   resource: {},
   start_time: Date.now(),
-  device: config.device
+  device: config.device,
+  free_mem: 0,
+  total_mem: 1,
+  cpus: [],
+  cpu_avg: 0
 };
 
 const update_status = () => {
@@ -80,5 +85,31 @@ _player.on("timeposition", (seconds) => {
   }
 });
 
+
+let __lst_cpu = null;
+
+const update_os = () => {
+  __data.free_mem = os.freemem();
+  __data.total_mem = os.totalmem();
+  if (__lst_cpu) {
+    let __cpu = os.cpus();
+    let __avg = [];
+    for (let i = 0; i < __cpu.length; i++) {
+      let totalTick = 0;
+      let cpu = __cpu[i], lst_cpu = __lst_cpu[i];
+      for (let type in cpu.times) {
+        totalTick += cpu.times[type] - lst_cpu.times[type];
+      }
+      __avg.push(1.0 - (cpu.times.idle - lst_cpu.times.idle) / totalTick);
+    }
+    __data.cpus = __avg;
+    __data.cpu_avg = _.sum(__avg) / __avg.length;
+    update_status();
+  }
+  __lst_cpu = os.cpus();
+};
+
 update_std();
 update_status();
+
+setInterval(update_os, 500);
