@@ -47,10 +47,12 @@ router.post('/player/jump/:seconds', function(req, res, next) {
 });
 
 router.post('/app/exit', function(req, res, next) {
-  setInterval(() => {
-    mpv.mpv._mpv.kill('SIGKILL');
-  }, 3000);
+  mpv.kill();
   res.json({ "success": true });
+});
+
+router.post('/app/kill', function(req, res, next) {
+  process.exit(0);
 });
 
 router.get('/player/observe', function(req, res, next) {

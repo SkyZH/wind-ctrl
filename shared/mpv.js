@@ -25,6 +25,10 @@ module.exports = {
   "jump": ext("goToPosition")
 };
 
+module.exports.kill = () => {
+  _player.mpvPlayer.kill();
+};
+
 module.exports.loadFile = (resource) => {
   __data.resource = resource;
   update_status();
@@ -102,7 +106,7 @@ const update_os = () => {
       }
       __avg.push(1.0 - (cpu.times.idle - lst_cpu.times.idle) / totalTick);
     }
-    __data.cpus = __avg;
+    __data.cpus = _.take(__avg, 4);
     __data.cpu_avg = _.sum(__avg) / __avg.length;
     update_status();
   }
